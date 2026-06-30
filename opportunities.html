@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Verified Grants &amp; Jobs — GrantAgent Africa</title>
+<meta name="description" content="Browse human-verified grants and jobs across East Africa. Every opportunity links to its original source." />
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --gold:#c9a961; --bg:#0f0f0f; --card:#1a1a1a; --border:#2a2a2a; --muted:#9a9a9a; --fg:#f5f5f5; }
+  body { font-family: 'Inter', sans-serif; background:var(--bg); color:var(--fg); }
+  .font-serif { font-family: 'Fraunces', serif; }
+  .text-gold { color: var(--gold); }
+  .bg-card { background: var(--card); }
+  .text-muted { color: var(--muted); }
+  .btn-primary { background: var(--gold); color:#1a1a1a; }
+  .btn-primary:hover { opacity:.9; }
+  .spinner { border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; width:36px; height:36px; animation:spin 0.8s linear infinite; margin:4rem auto; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body class="min-h-screen">
+
+<header class="sticky top-0 z-40 border-b border-[#2a2a2a] bg-black/70 backdrop-blur">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+    <a href="index.html" class="font-serif text-xl font-semibold">Grant<span class="text-gold">Agent</span> Africa</a>
+    <nav class="hidden md:flex items-center gap-8 text-sm">
+      <a href="index.html#how" class="text-[#9a9a9a] hover:text-white">How it works</a>
+      <a href="opportunities.html" class="text-white">Opportunities</a>
+      <a href="register.html" class="text-[#9a9a9a] hover:text-white">Register</a>
+    </nav>
+    <a href="register.html" class="btn-primary rounded-md px-4 py-2 text-sm font-medium">Register free</a>
+  </div>
+</header>
+
+<section class="border-b border-[#2a2a2a]">
+  <div class="mx-auto max-w-6xl px-6 py-16">
+    <p class="text-xs uppercase tracking-[0.22em] text-gold">Live database</p>
+    <h1 class="mt-3 font-serif text-4xl md:text-5xl">Current opportunities</h1>
+    <p class="mt-3 max-w-2xl text-[#9a9a9a]">Every entry links to its original source. Expired opportunities are hidden automatically.</p>
+  </div>
+</section>
+
+<section class="mx-auto max-w-6xl px-6 py-10">
+  <!-- Filters -->
+  <div class="flex flex-wrap items-center gap-3 rounded-xl border border-[#2a2a2a] bg-card p-4">
+    <div class="inline-flex rounded-md border border-[#2a2a2a]" id="type-filter">
+      <button data-type="all"   class="px-4 py-2 text-sm btn-primary rounded-l-md">All</button>
+      <button data-type="grant" class="px-4 py-2 text-sm text-[#9a9a9a] hover:text-white">Grants</button>
+      <button data-type="job"   class="px-4 py-2 text-sm text-[#9a9a9a] hover:text-white rounded-r-md">Jobs</button>
+    </div>
+    <select id="sector-filter" class="rounded-md border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white">
+      <option>All sectors</option>
+    </select>
+    <input id="search-input" placeholder="Search title, organisation, country…"
+      class="flex-1 min-w-[200px] rounded-md border border-[#2a2a2a] bg-black px-3 py-2 text-sm text-white"/>
+  </div>
+
+  <!-- Loading spinner -->
+  <div id="loading"><div class="spinner"></div><p class="text-center text-[#9a9a9a] text-sm">Loading opportunities…</p></div>
+
+  <!-- Error state -->
+  <div id="error-state" class="hidden mt-10 rounded-xl border border-dashed border-[#2a2a2a] p-10 text-center text-[#9a9a9a]">
+    Could not load opportunities. Please try refreshing the page.
+  </div>
+
+  <!-- Grid -->
+  <div id="grid" class="hidden mt-6 grid gap-4 md:grid-cols-2"></div>
+
+  <!-- No results -->
+  <div id="no-results" class="hidden mt-10 rounded-xl border border-dashed border-[#2a2a2a] p-10 text-center text-[#9a9a9a]">
+    No open opportunities match these filters right now.
+    <a href="register.html" class="text-gold underline ml-1">Register</a> to get alerts when new ones are added.
+  </div>
+
+  <div class="mt-12 rounded-xl border border-[#2a2a2a] bg-card/60 p-6">
+    <p class="text-sm text-[#9a9a9a]">
+      Only opportunities with open deadlines are shown.
+      <a href="register.html" class="text-gold underline">Register your organisation</a>
+      to receive email alerts when new grants and jobs matching your sector are added.
+    </p>
+  </div>
+</section>
+
+<footer class="mt-24 border-t border-[#2a2a2a]">
+  <div class="mx-auto grid max-w-7xl gap-6 px-6 py-10 text-sm text-[#9a9a9a] md:grid-cols-2">
+    <div>
+      <div class="font-serif text-lg text-white">Grant<span class="text-gold">Agent</span> Africa</div>
+      <p class="mt-2 max-w-md">Verified grants and jobs for East African startups.</p>
+    </div>
+    <div class="md:text-right">© <span id="yr"></span> GrantAgent Africa.</div>
+  </div>
+</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 1: After deploying your Apps Script, paste your Web App URL below.
+// It looks like: https://script.google.com/macros/s/YOUR_ID/exec
+// ─────────────────────────────────────────────────────────────────────────────
+    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxZ9-l3BTbwsAkyvTupjdTZ96HZfcJgezacpUzzF1TmdjsZpOCbjrVk-pZ8lG4ifyPquQ/exec';
+
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+let allOpps = [];
+let activeType = 'all';
+
+function daysLeft(deadline) {
+  return Math.max(0, Math.ceil((new Date(deadline) - Date.now()) / 86400000));
+}
+function fmtDate(str) {
+  return new Date(str).toLocaleDateString('en-GB', { year:'numeric', month:'short', day:'numeric' });
+}
+
+function buildCard(o) {
+  const dl = daysLeft(o.deadline);
+  const urgent = dl <= 30;
+  const isGrant = o.type === 'grant';
+  return `
+    <article class="flex flex-col rounded-xl border border-[#2a2a2a] bg-card p-6">
+      <div class="flex items-center justify-between gap-3">
+        <span class="rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${isGrant ? 'bg-yellow-500/15 text-gold' : 'bg-white/10 text-white'}">${o.type}</span>
+        <span class="text-xs font-medium ${urgent ? 'text-red-400' : 'text-[#9a9a9a]'}">${dl === 0 ? 'Closing today' : dl + ' days left'}</span>
+      </div>
+      <h3 class="mt-3 font-serif text-xl leading-snug">${o.title}</h3>
+      <p class="mt-1 text-sm text-[#9a9a9a]">${o.organisation} · ${o.country}</p>
+      <dl class="mt-4 grid grid-cols-2 gap-y-1 text-xs">
+        <dt class="text-[#9a9a9a]">Amount</dt><dd class="text-right">${o.amount}</dd>
+        <dt class="text-[#9a9a9a]">Sector</dt><dd class="text-right">${o.sector}</dd>
+        <dt class="text-[#9a9a9a]">Deadline</dt><dd class="text-right">${fmtDate(o.deadline)}</dd>
+      </dl>
+      <div class="mt-5 flex items-center justify-between border-t border-[#2a2a2a] pt-4">
+        <span class="text-xs text-[#9a9a9a]">Verified listing</span>
+        <a href="${o.url}" target="_blank" rel="noopener noreferrer"
+          class="btn-primary inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold">
+          View original ↗
+        </a>
+      </div>
+    </article>`;
+}
+
+function renderGrid() {
+  const sector = document.getElementById('sector-filter').value;
+  const q      = document.getElementById('search-input').value.toLowerCase();
+
+  const filtered = allOpps.filter(o => {
+    if (activeType !== 'all' && o.type !== activeType) return false;
+    if (sector !== 'All sectors' && o.sector !== sector) return false;
+    if (q && !`${o.title} ${o.organisation} ${o.country}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const grid = document.getElementById('grid');
+  const noRes = document.getElementById('no-results');
+
+  if (!filtered.length) {
+    grid.innerHTML = '';
+    grid.classList.add('hidden');
+    noRes.classList.remove('hidden');
+  } else {
+    noRes.classList.add('hidden');
+    grid.classList.remove('hidden');
+    grid.innerHTML = filtered.map(buildCard).join('');
+  }
+}
+
+function populateSectorFilter(opps) {
+  const sectors = ['All sectors', ...new Set(opps.map(o => o.sector).filter(Boolean).sort())];
+  const sel = document.getElementById('sector-filter');
+  sel.innerHTML = sectors.map(s => `<option>${s}</option>`).join('');
+}
+
+// Type filter buttons
+document.querySelectorAll('#type-filter button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#type-filter button').forEach(b => {
+      b.classList.remove('btn-primary');
+      b.classList.add('text-[#9a9a9a]');
+    });
+    btn.classList.add('btn-primary');
+    btn.classList.remove('text-[#9a9a9a]');
+    activeType = btn.dataset.type;
+    renderGrid();
+  });
+});
+
+document.getElementById('sector-filter').addEventListener('change', renderGrid);
+document.getElementById('search-input').addEventListener('input', renderGrid);
+
+// ── Fetch from Google Sheets ──
+async function loadOpportunities() {
+  try {
+    const res  = await fetch(SHEET_URL);
+    const data = await res.json();
+    allOpps    = data.opportunities || [];
+
+    document.getElementById('loading').classList.add('hidden');
+    populateSectorFilter(allOpps);
+    renderGrid();
+  } catch (err) {
+    console.error('Failed to load opportunities:', err);
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('error-state').classList.remove('hidden');
+  }
+}
+
+loadOpportunities();
+</script>
+</body>
+</html>
